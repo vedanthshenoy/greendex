@@ -1,59 +1,57 @@
-'''
-Documention for GNews: https://github.com/ranahaani/GNews/blob/master/README.md
-
-in get_News(location,period) 
-location can be Manglaore,bangalore etc..
-for period it can be :
-these:
- - h = hours (eg: 12h)
- - d = days (eg: 7d)
- - m = months (eg: 6m)
- - y = years (eg: 1y)
-
-'''
-
-
 import json
-import requests
+import os
+from typing import List
 from bs4 import BeautifulSoup
+import requests
 from gnews import GNews
 from langchain_google_genai import ChatGoogleGenerativeAI
-import os
-import getpass
+from dotenv import load_dotenv
 
-# Function to scrape content from a given URL
-def scrape_content(url):
+load_dotenv()
+
+def scrape_content(url: str) -> str:
+    """
+    Function to scrape content from a given URL.
+
+    Args:
+        url (str): The URL to scrape content from.
+
+    Returns:
+        str: The scraped content.
+    """
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     paragraphs = soup.find_all('p')
     content = ' '.join([p.text for p in paragraphs])
     return content
 
-def get_News(location,period):
-    # Get environmental news for a given location
-    location = location
-    google_news = GNews(max_results=5,period=period)
+def get_news(location: str, period: str) -> None:
+    """
+    Function to get environmental news for a given location and period.
+
+    Args:
+        location (str): The location for which news needs to be fetched.
+        period (str): The period for which news needs to be fetched.
+                      It can be h (hours), d (days), m (months), or y (years).
+                      Example: '1y' for 1 year.
+    """
+    google_news = GNews(max_results=5, period=period)
     news_items = google_news.get_news(f'{location}: environmental')
 
-    # Extract URLs and scrape content
     all_contents = ""
     for item in news_items:
         url = item['url']
         content = scrape_content(url)
         all_contents += content + "\n"
 
-    # Provide your Google API Key
-    if "GOOGLE_API_KEY" not in os.environ:
-        os.environ["GOOGLE_API_KEY"] = getpass.getpass("Provide your Google API Key")
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+    if not google_api_key:
+        google_api_key = input("Provide your Google API Key: ")
 
-    # Initialize the Gemini AI model
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
-
-    # Generate a summary for all concatenated contents
-    result = llm.invoke(f"Summarize the following news content which should include the promises made,any percentage mentioned,date of publish,any kind of political party Name mentioned:\n{all_contents}")
+    result = llm.invoke(f"Summarize the following news content which should include the promises made, any percentage mentioned, date of publish, any kind of political party Name mentioned:\n{all_contents}")
     summary = result.content
 
-    # Save the summary to a JSON file
     summary_data = {
         'location': location,
         'summary': summary
@@ -64,6 +62,9 @@ def get_News(location,period):
 
     print("Summary has been saved to summary_news.json")
 
-
 if __name__ == "__main__":
-    get_News('Mangalore','1y')
+    
+    location = input("enter the location: ")
+    period = input("Enter the period: ")
+    
+    get_news(location, period)
