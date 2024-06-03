@@ -64,7 +64,7 @@ def get_news(location: str, period: str) -> None:
     chain = LLMChain(
         llm=llm,
         prompt=Prompt_temp,
-        verbose=True
+        verbose=False
     )
     
     text_context = all_contents
