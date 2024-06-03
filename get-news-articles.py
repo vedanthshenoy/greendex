@@ -57,8 +57,8 @@ def get_news(location: str, period: str) -> None:
         'summary': summary
     }
 
-    with open('summary_news.json', 'w') as f:
-        json.dump(summary_data, f, indent=4)
+    with open('summary_news.json', 'w') as file_save:
+        json.dump(summary_data, file_save, indent=4)
 
     print("Summary has been saved to summary_news.json")
 
