@@ -6,8 +6,11 @@ import requests
 from gnews import GNews
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 load_dotenv()
+
 
 def scrape_content(url: str) -> str:
     """
@@ -49,12 +52,31 @@ def get_news(location: str, period: str) -> None:
         google_api_key = input("Provide your Google API Key: ")
 
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
-    result = llm.invoke(f"Summarize the following news content which should include the promises made, any percentage mentioned, date of publish, any kind of political party Name mentioned:\n{all_contents}")
-    summary = result.content
+    Prompt_temp = PromptTemplate.from_template
+    (
+    "You are an Expert New writer and your task is to take the provided text_context and convert it into comprehensive summary"
+    "The summary should capture the main points and key details of the text while conveying the author's intended meaning accurately."
+    "Please ensure that the summary is well-organized and easy to read, with clear headings and subheadings to guide the reader through each section."
+    "The length of the summary should be appropriate to capture the main points and key details of the text, without including unnecessary information or becoming overly long."
+    "The text_context: {text_context}"
+    )
+    
+    chain = LLMChain(
+        llm=llm,
+        prompt=Prompt_temp,
+        verbose=True
+    )
+    
+    text_context = all_contents
+    result = chain.invoke(input=text_context)
+    summary = result
+
+    # Extracting "text" from the result
+    summary_text = summary['text']
 
     summary_data = {
         'location': location,
-        'summary': summary
+        'summary': summary_text
     }
 
     with open('summary_news.json', 'w') as file_save:
