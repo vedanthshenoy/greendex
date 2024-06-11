@@ -7,13 +7,14 @@ import os
 load_dotenv()
 
 
-def explain_image(image_url : str, model : str = "gemini-1.0-pro-vision-latest") -> str:
+def explain_image(image_url : str, prompt : str = "What's in this image?", model : str = "gemini-1.0-pro-vision-latest") -> str:
     """_summary_
     Sole purpose of this function is to verify whether the Gemini vision model is working without any hiccups.
     This function takes in argument image_url and model to generate a description of the given image.
 
     Args:
-        image_url (str): The path, the image is stored in local
+        image_url (str): The path, the image is stored in local.
+        prompt (str) : Prompt for what you want to do with the image
         model (str, optional): Gemini models card name. Defaults to "gemini-1.0-pro-vision-latest".
 
     Returns:
@@ -30,7 +31,7 @@ def explain_image(image_url : str, model : str = "gemini-1.0-pro-vision-latest")
         content=[
             {
                 "type": "text",
-                "text": "What's in this image?",
+                "text": prompt,
             },  # You can optionally provide text parts
             {"type": "image_url", "image_url": image_url},
         ]
